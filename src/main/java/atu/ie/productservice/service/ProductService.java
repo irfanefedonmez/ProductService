@@ -1,67 +1,44 @@
 package atu.ie.productservice.service;
 
-
-
 import atu.ie.productservice.exception.ProductNotFoundException;
 import atu.ie.productservice.model.Product;
+import atu.ie.productservice.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class ProductService {
 
-    private final List<Product> products = new ArrayList<>();
-    private long nextId = 1;
+    private final ProductRepository productRepository;
+
+    public ProductService(ProductRepository productRepository) {
+        this.productRepository = productRepository;
+    }
 
     public Product addProduct(Product product) {
-        product.setId(nextId++);
-        products.add(product);
-        return product;
+        return productRepository.save(product);
     }
 
     public List<Product> getAllProducts() {
-        return products;
+        return productRepository.findAll();
     }
 
     public Product getProductById(Long id) {
-        for (Product product : products) {
-            if (id.equals(product.getId())) {
-                return product;
-            }
-        }
-        throw new ProductNotFoundException("Product with id " + id + " not found");
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException("Product with id " + id + " not found"));
     }
 
     public List<Product> getProductsByCategory(String category) {
-        List<Product> result = new ArrayList<>();
-        for (Product product : products) {
-            if (product.getCategory().equalsIgnoreCase(category)) {
-                result.add(product);
-            }
-        }
-        return result;
+        return productRepository.findByCategoryIgnoreCase(category);
     }
 
     public List<Product> getProductsByBrand(String brand) {
-        List<Product> result = new ArrayList<>();
-        for (Product product : products) {
-            if (product.getBrand().equalsIgnoreCase(brand)) {
-                result.add(product);
-            }
-        }
-        return result;
+        return productRepository.findByBrandIgnoreCase(brand);
     }
 
     public List<Product> getInStockProducts() {
-        List<Product> result = new ArrayList<>();
-        for (Product product : products) {
-            if (product.getStockQuantity() > 0) {
-                result.add(product);
-            }
-        }
-        return result;
+        return productRepository.findByStockQuantityGreaterThan(0);
     }
 
     public Product updateProduct(Long id, Product updatedProduct) {
@@ -75,11 +52,11 @@ public class ProductService {
         existing.setStockQuantity(updatedProduct.getStockQuantity());
         existing.setDescription(updatedProduct.getDescription());
 
-        return existing;
+        return productRepository.save(existing);
     }
 
     public void deleteProduct(Long id) {
         Product product = getProductById(id);
-        products.remove(product);
+        productRepository.delete(product);
     }
 }
