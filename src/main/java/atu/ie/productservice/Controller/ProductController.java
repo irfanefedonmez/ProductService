@@ -1,7 +1,6 @@
 package atu.ie.productservice.Controller;
 
-
-
+import atu.ie.productservice.client.VehicleClient;
 import atu.ie.productservice.model.Product;
 import atu.ie.productservice.service.ProductService;
 import jakarta.validation.Valid;
@@ -15,15 +14,22 @@ import java.util.List;
 @RequestMapping("/products")
 public class ProductController {
 
+    private final VehicleClient vehicleClient;
     private final ProductService productService;
 
-    public ProductController(ProductService productService) {
+    public ProductController(ProductService productService, VehicleClient vehicleClient) {
         this.productService = productService;
+        this.vehicleClient = vehicleClient;
     }
 
     @PostMapping
     public ResponseEntity<Product> addProduct(@Valid @RequestBody Product product) {
         return new ResponseEntity<>(productService.addProduct(product), HttpStatus.CREATED);
+    }
+
+    @GetMapping("/vehicles-from-product")
+    public String getVehiclesFromProduct() {
+        return vehicleClient.getVehicles();
     }
 
     @GetMapping
